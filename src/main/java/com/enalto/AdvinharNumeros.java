@@ -13,35 +13,12 @@ public class AdvinharNumeros {
         int countTentativas = 0;
         int inputNumber = 0;
 
-
         String min = lerString("Digite o intervalo inicial para gerar o numero secreto ou (sair): ");
-        if (min.equalsIgnoreCase("sair")) {
-            System.out.println("Numero de tentativas= " + countTentativas);
-            return;
-        } else {
-            try {
-                inputNumber = Integer.parseInt(min);
-            } catch (NumberFormatException e) {
-                System.out.println("Entrada Inválida.");
-                System.out.println("Numero de tentativas= " + countTentativas);
-                return;
-            }
-        }
 
+        if (!checkInput(min, countTentativas)) return;
 
         String max = lerString("Digite o intervalo final para gerar o numero secreto ou (sair): ");
-        if (max.equalsIgnoreCase("sair")) {
-            System.out.println("Numero de tentativas= " + countTentativas);
-            return;
-        } else {
-            try {
-                inputNumber = Integer.parseInt(min);
-            } catch (NumberFormatException e) {
-                System.out.println("Entrada Inválida.");
-                System.out.println("Numero de tentativas= " + countTentativas);
-                return;
-            }
-        }
+        if (!checkInput(max, countTentativas)) return;
 
         GeradorDeNumeroAleatorio geradorDeNumeroAleatorio;
 
@@ -51,7 +28,7 @@ public class AdvinharNumeros {
 
         } catch (Exception e) {
             System.out.println("Numero de tentativas= " + countTentativas);
-            System.out.println("Entrada inválida.");
+            System.out.println("Entrada inválida. [" + e.getMessage() + "]");
             return;
         }
 
@@ -64,29 +41,50 @@ public class AdvinharNumeros {
                 System.out.println("Numero de tentativas= " + countTentativas);
                 break;
             } else {
-                try {
-                    inputNumber = Integer.parseInt(input);
-                    countTentativas++;
+                inputNumber = Integer.parseInt(input);
+                countTentativas++;
 
-                    InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(inputNumber);
+                InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(inputNumber);
 
-                    if (inputCompare.equals(InputCompare.IGUAL)) {
-                        System.out.println("Você acertou o numero secreto, parabens!");
-                        System.out.println("Numero de tentativas= " + countTentativas);
-                        break;
-                    } else if (inputCompare.equals(InputCompare.MAIOR)) {
-                        System.out.println("Numero secreto é menor, tente novamente");
-                    } else {
-                        System.out.println("Numero secreto é maior, tente novamente");
-                    }
-                } catch (NumberFormatException e) {
-                    //throw new RuntimeException("Não é 'sair' nem um número válido");
-                    System.out.println("Não é 'sair' nem um número válido.");
+                if (inputCompare.equals(InputCompare.IGUAL)) {
+                    System.out.println("Você acertou!!! o numero secreto é= " + geradorDeNumeroAleatorio.getNumeroGerado() + ", parabens!");
+                    System.out.println("Numero de tentativas= " + countTentativas);
+                    break;
+                } else if (inputCompare.equals(InputCompare.MAIOR)) {
+                    System.out.println("Numero secreto é menor, tente novamente");
+                } else {
+                    System.out.println("Numero secreto é maior, tente novamente");
                 }
             }
         }
     }
 
+    private static boolean checkInput(String input, int countTentativas) {
+        int inputNumber;
+        if (input.equalsIgnoreCase("sair")) {
+            System.out.println("Numero de tentativas= " + countTentativas);
+            return false;
+        } else {
+            try {
+                inputNumber = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada Inválida." + e.getMessage());
+                System.out.println("Numero de tentativas= " + countTentativas);
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * Cria um objeto GeradorDeNumeroAleatorio que contem o numero aleatorio
+     * gerado
+     *
+     * @param min
+     * @param max
+     * @return GeradorDeNumeroAleatorio
+     */
     private static GeradorDeNumeroAleatorio gerarNumeroAleatorio(int min, int max) {
         var numeroAleatorio = new GeradorDeNumeroAleatorio.Builder()
                 .comIntervaloInicial(min)
@@ -95,6 +93,13 @@ public class AdvinharNumeros {
         return numeroAleatorio;
     }
 
+
+    /**
+     * Leitura das entradas digitadas pelo usuario
+     *
+     * @param mensagem
+     * @return String
+     */
     public static String lerString(String mensagem) {
         Scanner scanner = new Scanner(System.in);
         System.out.print(mensagem);
@@ -146,17 +151,17 @@ class GeradorDeNumeroAleatorio {
         private int numeroGerado;
 
         public Builder comIntervaloInicial(int minimo) {
-            if (minimo <= 0) {
-                throw new RuntimeException("Intervalo inicial deve ser maior que zero.");
-            }
+//            if (minimo <= 0) {
+//                throw new RuntimeException("Intervalo inicial deve ser maior que zero.");
+//            }
             this.minimo = minimo;
             return this;
         }
 
         public Builder comIntervaloFinal(int maximo) {
-            if (minimo <= 0) {
-                throw new RuntimeException("Intervalo final deve ser maior que zero.");
-            }
+//            if (minimo <= 0) {
+//                throw new RuntimeException("Intervalo final deve ser maior que zero.");
+//            }
             if (maximo <= minimo) {
                 throw new RuntimeException("Intervalo final deve ser maior que inicial.");
             }
