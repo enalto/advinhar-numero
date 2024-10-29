@@ -5,29 +5,35 @@ import java.util.Scanner;
 
 public class AdvinharNumeros {
 
+    private int countTentativas = 0;
+    private GeradorDeNumeroAleatorio geradorDeNumeroAleatorio;
+
+
     public static void main(String[] args) {
-        iniciarAplicacao();
+        AdvinharNumeros advinharNumeros = new AdvinharNumeros();
+        advinharNumeros.run();
     }
 
-    private static void iniciarAplicacao() {
-        int countTentativas = 0;
+
+
+
+    /**
+     * Start da aplicacao
+     */
+    private void run() {
         int inputNumber = 0;
-
         String min = lerString("Digite o intervalo inicial para gerar o numero secreto ou (sair): ");
-
-        if (!checkInput(min, countTentativas)) return;
+        if (!checkInput(min)) return;
 
         String max = lerString("Digite o intervalo final para gerar o numero secreto ou (sair): ");
-        if (!checkInput(max, countTentativas)) return;
-
-        GeradorDeNumeroAleatorio geradorDeNumeroAleatorio;
+        if (!checkInput(max)) return;
 
         try {
-            geradorDeNumeroAleatorio =
+            this.geradorDeNumeroAleatorio =
                     gerarNumeroAleatorio(Integer.parseInt(min), Integer.parseInt(max));
 
         } catch (Exception e) {
-            System.out.println("Numero de tentativas= " + countTentativas);
+            System.out.println("Numero de tentativas= " + this.countTentativas);
             System.out.println("Entrada inválida. [" + e.getMessage() + "]");
             return;
         }
@@ -38,17 +44,22 @@ public class AdvinharNumeros {
             // int numeroAleatorio = geradorDeNumeroAleatorio.getNumeroGerado();
 
             if (input.equalsIgnoreCase("sair")) {
-                System.out.println("Numero de tentativas= " + countTentativas);
+                System.out.println("Numero de tentativas= " + this.countTentativas);
                 break;
             } else {
-                inputNumber = Integer.parseInt(input);
-                countTentativas++;
+                try {
+                    inputNumber = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Digite um numero !!!");
+                    continue;
+                }
+                this.countTentativas++;
 
                 InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(inputNumber);
 
                 if (inputCompare.equals(InputCompare.IGUAL)) {
                     System.out.println("Você acertou!!! o numero secreto é= " + geradorDeNumeroAleatorio.getNumeroGerado() + ", parabens!");
-                    System.out.println("Numero de tentativas= " + countTentativas);
+                    System.out.println("Numero de tentativas= " + this.countTentativas);
                     break;
                 } else if (inputCompare.equals(InputCompare.MAIOR)) {
                     System.out.println("Numero secreto é menor, tente novamente");
@@ -59,17 +70,17 @@ public class AdvinharNumeros {
         }
     }
 
-    private static boolean checkInput(String input, int countTentativas) {
+    private boolean checkInput(String input) {
         int inputNumber;
         if (input.equalsIgnoreCase("sair")) {
-            System.out.println("Numero de tentativas= " + countTentativas);
+            System.out.println("Numero de tentativas= " + this.countTentativas);
             return false;
         } else {
             try {
                 inputNumber = Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println("Entrada Inválida." + e.getMessage());
-                System.out.println("Numero de tentativas= " + countTentativas);
+                System.out.println("Entrada Inválida.");
+                System.out.println("Numero de tentativas= " + this.countTentativas);
                 return false;
             }
         }
@@ -85,7 +96,7 @@ public class AdvinharNumeros {
      * @param max
      * @return GeradorDeNumeroAleatorio
      */
-    private static GeradorDeNumeroAleatorio gerarNumeroAleatorio(int min, int max) {
+    private GeradorDeNumeroAleatorio gerarNumeroAleatorio(int min, int max) {
         var numeroAleatorio = new GeradorDeNumeroAleatorio.Builder()
                 .comIntervaloInicial(min)
                 .comIntervaloFinal(max)
@@ -100,7 +111,7 @@ public class AdvinharNumeros {
      * @param mensagem
      * @return String
      */
-    public static String lerString(String mensagem) {
+    private String lerString(String mensagem) {
         Scanner scanner = new Scanner(System.in);
         System.out.print(mensagem);
         return scanner.nextLine();
@@ -114,7 +125,6 @@ public class AdvinharNumeros {
  *
  * @return int com numero aleatorio
  */
-
 class GeradorDeNumeroAleatorio {
     private int minimo;
     private int maximo;
