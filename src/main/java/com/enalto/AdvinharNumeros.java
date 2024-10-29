@@ -1,5 +1,12 @@
 package com.enalto;
 
+/**
+ * projeto esta disponivel no github
+ *
+ * https://github.com/enalto/advinhar-numero
+ *
+ */
+
 import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.*;
@@ -214,11 +221,11 @@ class GeradorDeNumeroAleatorio {
     }
 
     public boolean maiorQue(int other) {
-        return this.maximo > other;
+        return this.maximo >= other;
     }
 
     public boolean menorQue(int other) {
-        return this.minimo < other;
+        return this.minimo <= other;
     }
 
     /**
