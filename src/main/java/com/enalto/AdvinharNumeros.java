@@ -2,9 +2,8 @@ package com.enalto;
 
 /**
  * projeto esta disponivel no github
- *
+ * <p>
  * https://github.com/enalto/advinhar-numero
- *
  */
 
 import java.util.Random;
@@ -90,8 +89,6 @@ public class AdvinharNumeros {
         try {
             this.geradorDeNumeroAleatorio =
                     gerarNumeroAleatorio(Integer.parseInt(min), Integer.parseInt(max));
-            entradaInvalida = false;
-
         } catch (Exception e) {
             System.out.println("Numero de tentativas= " + this.countTentativas);
             System.out.println("Entrada inválida. [" + e.getMessage() + "]");
@@ -114,9 +111,10 @@ public class AdvinharNumeros {
                 }
                 this.countTentativas++;
 
-                if (!(geradorDeNumeroAleatorio.maiorQue(inputNumber)
-                        && geradorDeNumeroAleatorio.menorQue(inputNumber))) {
-                    System.out.println("Numero fora do intervalo definido!!!");
+                int intervaloInicial = geradorDeNumeroAleatorio.getMinimo();
+                int intervaloFinal = geradorDeNumeroAleatorio.getMaximo();
+                if (!validaIntervalo(inputNumber)) {
+                    System.out.println("Numero digitado está fora do intervalo [" + intervaloInicial + "-" + intervaloFinal + "] definido!!!");
                     continue;
                 }
 
@@ -133,6 +131,14 @@ public class AdvinharNumeros {
                 }
             }
         }
+    }
+
+    private boolean validaIntervalo(int inputNumber) {
+        if (!(geradorDeNumeroAleatorio.maximoEhMaiorQue(inputNumber)
+                && geradorDeNumeroAleatorio.minimoEhMenorQue(inputNumber))) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -220,12 +226,20 @@ class GeradorDeNumeroAleatorio {
         return numeroGerado;
     }
 
-    public boolean maiorQue(int other) {
+    public boolean maximoEhMaiorQue(int other) {
         return this.maximo >= other;
     }
 
-    public boolean menorQue(int other) {
+    public boolean minimoEhMenorQue(int other) {
         return this.minimo <= other;
+    }
+
+    public int getMinimo() {
+        return minimo;
+    }
+
+    public int getMaximo() {
+        return maximo;
     }
 
     /**
