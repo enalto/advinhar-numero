@@ -2,12 +2,19 @@ package com.enalto;
 
 import java.util.Random;
 import java.util.Scanner;
+import java.util.logging.*;
 
 public class AdvinharNumeros {
 
+    static {
+        System.setProperty(
+                "java.util.logging.SimpleFormatter.format",
+                "[%1$tF %1$tT] [%4$-7s] %5$s %n");
+    }
+
     private int countTentativas = 0;
     private GeradorDeNumeroAleatorio geradorDeNumeroAleatorio;
-
+    private static final Logger logger = Logger.getLogger(AdvinharNumeros.class.getName());
 
     public static void main(String[] args) {
         AdvinharNumeros advinharNumeros = new AdvinharNumeros();
@@ -15,22 +22,63 @@ public class AdvinharNumeros {
     }
 
 
-
-
     /**
      * Start da aplicacao
      */
     private void run() {
-        int inputNumber = 0;
-        String min = lerString("Digite o intervalo inicial para gerar o numero secreto ou (sair): ");
-        if (!checkInput(min)) return;
+        logger.setLevel(Level.INFO);
 
-        String max = lerString("Digite o intervalo final para gerar o numero secreto ou (sair): ");
-        if (!checkInput(max)) return;
+        String thin = """
+                                                                                                    \s
+                .   .     o,---.                                                                    \s
+                |   |,---..|    ,---.,---..   .,-.-.,---.,---.                                      \s
+                |   ||   |||    |---'`---.|   || | |,---||                                          \s
+                `---'`   '``---'`---'`---'`---'` ' '`---^`                                          \s
+                                                                                                    \s
+                                                                                                    \s
+                    |                       |         ,---.    |      o     |                       \s
+                    |,---.,---.,---.    ,---|,---.    |---|,---|.    ,.,---.|---.,---.,---.,---.,---.
+                    ||   ||   ||   |    |   |,---|    |   ||   | \\  / ||   ||   |,---||    ,---||   |
+                `---'`---'`---|`---'    `---'`---^    `   '`---'  `'  ``   '`   '`---^`---'`---^`---'
+                          `---'                                                                     \s
+                
+                                                              \s
+                """;
+
+        logger.info(thin);
+        logger.info("Aluno: Enalto de Oliveira Gondrige");
+        logger.info("RA: 22114039-5");
+        logger.info("Bem-vindo ao Jogo da Advinhação!");
+        logger.info("Tente adivinhar o número secreto.");
+        logger.info("Digite 'sair' para encerrar o jogo.");
+
+        int inputNumber = 0;
+        boolean entradaInvalida = true;
+        String min="";
+        String max="";
+
+        do {
+
+            min = lerString("Digite o intervalo inicial para gerar o numero secreto ou (sair): ");
+            if(isShutdown(min))
+                return;
+
+            entradaInvalida = !checkInput(min);
+            if(entradaInvalida)
+                continue;
+
+            max = lerString("Digite o intervalo final para gerar o numero secreto ou (sair): ");
+            if(isShutdown(max))
+                return;
+
+            entradaInvalida = !checkInput(max);
+
+        } while (entradaInvalida);
 
         try {
             this.geradorDeNumeroAleatorio =
                     gerarNumeroAleatorio(Integer.parseInt(min), Integer.parseInt(max));
+            entradaInvalida = false;
 
         } catch (Exception e) {
             System.out.println("Numero de tentativas= " + this.countTentativas);
@@ -39,18 +87,17 @@ public class AdvinharNumeros {
         }
 
         while (true) {
-
             String input = lerString("Digite o numero secreto ou [sair] para finalizar: ");
-            // int numeroAleatorio = geradorDeNumeroAleatorio.getNumeroGerado();
 
             if (input.equalsIgnoreCase("sair")) {
-                System.out.println("Numero de tentativas= " + this.countTentativas);
+                logger.info("Numero de tentativas= " + this.countTentativas);
+                logger.info("Jogo finalizado.");
                 break;
             } else {
                 try {
                     inputNumber = Integer.parseInt(input);
                 } catch (NumberFormatException e) {
-                    System.out.println("Digite um numero !!!");
+                    System.out.println("Digite um numero válido!!!");
                     continue;
                 }
                 this.countTentativas++;
@@ -58,33 +105,47 @@ public class AdvinharNumeros {
                 InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(inputNumber);
 
                 if (inputCompare.equals(InputCompare.IGUAL)) {
-                    System.out.println("Você acertou!!! o numero secreto é= " + geradorDeNumeroAleatorio.getNumeroGerado() + ", parabens!");
-                    System.out.println("Numero de tentativas= " + this.countTentativas);
+                    logger.info("Você acertou!!! o numero secreto é= " + geradorDeNumeroAleatorio.getNumeroGerado() + ", parabens!");
+                    logger.info("Numero de tentativas= " + this.countTentativas);
                     break;
                 } else if (inputCompare.equals(InputCompare.MAIOR)) {
-                    System.out.println("Numero secreto é menor, tente novamente");
+                    System.out.println("Numero secreto é MENOR, tente novamente");
                 } else {
-                    System.out.println("Numero secreto é maior, tente novamente");
+                    System.out.println("Numero secreto é MAIOR, tente novamente");
                 }
             }
         }
     }
 
+    /**
+     * Validar se o numero é valido
+     *
+     * @param input
+     * @return boolean
+     */
     private boolean checkInput(String input) {
         int inputNumber;
-        if (input.equalsIgnoreCase("sair")) {
-            System.out.println("Numero de tentativas= " + this.countTentativas);
+        try {
+            inputNumber = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada Inválida. Digite um numero valido.");
             return false;
-        } else {
-            try {
-                inputNumber = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println("Entrada Inválida.");
-                System.out.println("Numero de tentativas= " + this.countTentativas);
-                return false;
-            }
         }
         return true;
+    }
+
+    /**
+     * Checar se o usuario quer sair do jogo
+     * @param input
+     * @return
+     */
+    private boolean isShutdown(String input) {
+        if (input.equalsIgnoreCase("sair")) {
+            logger.info("Numero de tentativas= " + this.countTentativas);
+            logger.info("Jogo finalizado.");
+            return true;
+        }
+        return false;
     }
 
 
@@ -119,11 +180,8 @@ public class AdvinharNumeros {
 
 }
 
-
 /**
- * Builder para gerar o numero aleatorio num determinado intervalo
- *
- * @return int com numero aleatorio
+ * Classe GeradorDeNumeroAleatorio, para gerar o numero aleatorio
  */
 class GeradorDeNumeroAleatorio {
     private int minimo;
@@ -155,23 +213,26 @@ class GeradorDeNumeroAleatorio {
         return this.numeroGerado < other;
     }
 
+    /**
+     * Padrão builder para criar objeto Gerador de Numero Aleatorio
+     */
     public static class Builder {
         private int minimo;
         private int maximo;
         private int numeroGerado;
 
         public Builder comIntervaloInicial(int minimo) {
-//            if (minimo <= 0) {
-//                throw new RuntimeException("Intervalo inicial deve ser maior que zero.");
-//            }
+            if (minimo <= 0) {
+                throw new RuntimeException("Intervalo inicial deve ser maior que zero.");
+            }
             this.minimo = minimo;
             return this;
         }
 
         public Builder comIntervaloFinal(int maximo) {
-//            if (minimo <= 0) {
-//                throw new RuntimeException("Intervalo final deve ser maior que zero.");
-//            }
+            if (minimo <= 0) {
+                throw new RuntimeException("Intervalo final deve ser maior que zero.");
+            }
             if (maximo <= minimo) {
                 throw new RuntimeException("Intervalo final deve ser maior que inicial.");
             }
