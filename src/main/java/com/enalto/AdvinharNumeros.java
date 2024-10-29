@@ -4,6 +4,8 @@ package com.enalto;
  * projeto esta disponivel no github
  * <p>
  * https://github.com/enalto/advinhar-numero
+ * <p>
+ * Projeto REQUER Java 15 ou superior
  */
 
 import java.util.Random;
@@ -21,6 +23,8 @@ public class AdvinharNumeros {
     private int countTentativas = 0;
     private GeradorDeNumeroAleatorio geradorDeNumeroAleatorio;
     private static final Logger logger = Logger.getLogger(AdvinharNumeros.class.getName());
+    private static final String javaVersion = System.getProperty("java.version");
+
 
     public static void main(String[] args) {
         AdvinharNumeros advinharNumeros = new AdvinharNumeros();
@@ -34,24 +38,34 @@ public class AdvinharNumeros {
     private void run() {
         logger.setLevel(Level.INFO);
 
-        String thin = """
-                                                                                                    \s
-                .   .     o,---.                                                                    \s
-                |   |,---..|    ,---.,---..   .,-.-.,---.,---.                                      \s
-                |   ||   |||    |---'`---.|   || | |,---||                                          \s
-                `---'`   '``---'`---'`---'`---'` ' '`---^`                                          \s
-                                                                                                    \s
-                                                                                                    \s
-                    |                       |         ,---.    |      o     |                       \s
-                    |,---.,---.,---.    ,---|,---.    |---|,---|.    ,.,---.|---.,---.,---.,---.,---.
-                    ||   ||   ||   |    |   |,---|    |   ||   | \\  / ||   ||   |,---||    ,---||   |
-                `---'`---'`---|`---'    `---'`---^    `   '`---'  `'  ``   '`   '`---^`---'`---^`---'
-                          `---'                                                                     \s
-                
-                                                              \s
-                """;
+        /**
+         * Requerido JVM 15 ou superior
+         *
+         *
+         * Caso a versão da JVM seja inferior a 15
+         * Este bloco de codigo deve ser excluido
+         *
+         */
+        if (Integer.parseInt(javaVersion) >= 15) {
+            String thin = """
+                                                                                                        \s
+                    .   .     o,---.                                                                    \s
+                    |   |,---..|    ,---.,---..   .,-.-.,---.,---.                                      \s
+                    |   ||   |||    |---'`---.|   || | |,---||                                          \s
+                    `---'`   '``---'`---'`---'`---'` ' '`---^`                                          \s
+                                                                                                        \s
+                                                                                                        \s
+                        |                       |         ,---.    |      o     |                       \s
+                        |,---.,---.,---.    ,---|,---.    |---|,---|.    ,.,---.|---.,---.,---.,---.,---.
+                        ||   ||   ||   |    |   |,---|    |   ||   | \\  / ||   ||   |,---||    ,---||   |
+                    `---'`---'`---|`---'    `---'`---^    `   '`---'  `'  ``   '`   '`---^`---'`---^`---'
+                              `---'                                                                     \s
+                    
+                                                                  \s
+                    """;
+            logger.info(thin);
+        }
 
-        logger.info(thin);
         logger.info("Aluno: Enalto de Oliveira Gondrige");
         logger.info("RA: 22114039-5");
         logger.info("Bem-vindo ao Jogo da Advinhação!");
