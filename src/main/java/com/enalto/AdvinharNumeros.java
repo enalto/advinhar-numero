@@ -54,24 +54,29 @@ public class AdvinharNumeros {
 
         int inputNumber = 0;
         boolean entradaInvalida = true;
-        String min="";
-        String max="";
+        String min = "";
+        String max = "";
 
         do {
 
             min = lerString("Digite o intervalo inicial para gerar o numero secreto ou (sair): ");
-            if(isShutdown(min))
+            if (isShutdown(min))
                 return;
 
             entradaInvalida = !checkInput(min);
-            if(entradaInvalida)
+            if (entradaInvalida)
                 continue;
 
             max = lerString("Digite o intervalo final para gerar o numero secreto ou (sair): ");
-            if(isShutdown(max))
+            if (isShutdown(max))
                 return;
 
             entradaInvalida = !checkInput(max);
+
+            if (!(Integer.parseInt(max) > Integer.parseInt(min))) {
+                System.out.println("Intervalo incorreto, informe novamente!");
+                entradaInvalida = true;
+            }
 
         } while (entradaInvalida);
 
@@ -101,6 +106,12 @@ public class AdvinharNumeros {
                     continue;
                 }
                 this.countTentativas++;
+
+                if (!(geradorDeNumeroAleatorio.maiorQue(inputNumber)
+                        && geradorDeNumeroAleatorio.menorQue(inputNumber))) {
+                    System.out.println("Numero fora do intervalo definido!!!");
+                    continue;
+                }
 
                 InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(inputNumber);
 
@@ -136,6 +147,7 @@ public class AdvinharNumeros {
 
     /**
      * Checar se o usuario quer sair do jogo
+     *
      * @param input
      * @return
      */
@@ -201,16 +213,12 @@ class GeradorDeNumeroAleatorio {
         return numeroGerado;
     }
 
-    public boolean isEqual(int other) {
-        return this.numeroGerado == other;
+    public boolean maiorQue(int other) {
+        return this.maximo > other;
     }
 
-    public boolean isHighest(int other) {
-        return this.numeroGerado > other;
-    }
-
-    public boolean isLowest(int other) {
-        return this.numeroGerado < other;
+    public boolean menorQue(int other) {
+        return this.minimo < other;
     }
 
     /**
