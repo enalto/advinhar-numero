@@ -3,7 +3,7 @@ package com.enalto;
 import java.util.Scanner;
 import java.util.function.Predicate;
 
-public class ValidarInput {
+public class ValidarInput1 {
 
     public static <T> T validateInput(Scanner scanner, String prompt, Predicate<T> validator) {
         T input;

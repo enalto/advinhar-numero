@@ -3,12 +3,13 @@ package com.enalto;
 /**
  * projeto esta disponivel no github
  * https://github.com/enalto/advinhar-numero
- * Projeto REQUER Java 15 ou superior
+ * Projeto REQUER Java 17 ou superior
  */
 
 import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.function.Predicate;
 import java.util.logging.*;
 
 public class AdvinharNumeros {
@@ -53,12 +54,12 @@ public class AdvinharNumeros {
             Optional<Integer> chute = leituraDoChute();
             if (chute.isEmpty()) break;
 
-            InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(chute.get());
-            if (inputCompare.equals(InputCompare.IGUAL)) {
+            InputNumber inputNumber = geradorDeNumeroAleatorio.compareWith(chute.get());
+            if (inputNumber.equals(InputNumber.IGUAL)) {
                 System.out.println("Parabens você acertou !!!, numero secreto= "
                         + geradorDeNumeroAleatorio.getNumeroGerado());
                 break;
-            } else if (inputCompare.equals(InputCompare.MENOR)) {
+            } else if (inputNumber.equals(InputNumber.MENOR)) {
                 System.out.println("Numero secreto é maior!, tente novamente");
             } else {
                 System.out.println("Numero secreto é menor!, tente novamente");
@@ -71,7 +72,7 @@ public class AdvinharNumeros {
         Optional<Integer> result = Optional.empty();
         int chuteValue = 0;
         while (true) {
-            String chute = ValidarInput
+            String chute = ValidarInput1
                     .validateInput(scanner, "Entre com numero secreto ou [enter]=sair ",
                             (String s) -> s.isEmpty() | s.matches("^\\d+$"));
             if (chute.isEmpty()) break;
@@ -79,7 +80,7 @@ public class AdvinharNumeros {
             chuteValue = Integer.parseInt(chute);
             this.countTentativas++;
 
-            if (!validaIntervalo(chuteValue)) {
+            if (!chuteEstaNoIntervalo(chuteValue)) {
                 System.out.println("Chute deve estar no intervalo entre " + geradorDeNumeroAleatorio.getMinimo()
                         + " e " + geradorDeNumeroAleatorio.getMaximo());
                 continue;
@@ -94,19 +95,21 @@ public class AdvinharNumeros {
         Scanner scanner = new Scanner(System.in);
         Optional<Pair> pair = Optional.empty();
         while (true) {
-            String start = ValidarInput.validateInput(scanner, "Digite o intervalo inicial ou [Enter]=sair: ",
+            String strStart = ValidarInput1.validateInput(scanner, "Digite o intervalo inicial ou [Enter]=sair: ",
                     (String s) -> s.matches("^\\d+$") | s.isEmpty());
-            if (start.isEmpty()) break;
+            if (strStart.isEmpty()) break;
+            int start = Integer.parseInt(strStart);
 
-            String end = ValidarInput.validateInput(scanner, "Digite o intervalo final ou [Enter]=sair: ",
-                    (String s) -> s.matches("^\\d+$") | s.isEmpty());
-            if (end.isEmpty()) break;
+            String strEnd = ValidarInput1.validateInput(scanner, "Digite o intervalo final ou [Enter]=sair: ",
+                    (String s) -> ((s.matches("^\\d+$") && Integer.parseInt(s) > start)) || s.isEmpty());
+            if (strEnd.isEmpty()) break;
+            int end = Integer.parseInt(strEnd);
 
-            if ((Integer.parseInt(start) > Integer.parseInt(end))) {
+            if (start > end) {
                 System.out.println("Intervalo incorreto, informe novamente!");
                 continue;
             }
-            return pair = Optional.of(new Pair(Integer.parseInt(start), Integer.parseInt(end)));
+            return pair = Optional.of(new Pair(Integer.parseInt(strStart), Integer.parseInt(strEnd)));
         }
         return pair;
     }
@@ -147,12 +150,12 @@ public class AdvinharNumeros {
 
     }
 
-    private boolean validaIntervalo(int inputNumber) {
-        if (!(geradorDeNumeroAleatorio.maximoEhMaiorQue(inputNumber)
+    private boolean chuteEstaNoIntervalo(int inputNumber) {
+        if ((geradorDeNumeroAleatorio.maximoEhMaiorQue(inputNumber)
                 && geradorDeNumeroAleatorio.minimoEhMenorQue(inputNumber))) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -183,6 +186,7 @@ class GeradorDeNumeroAleatorio {
     private int minimo;
     private int maximo;
     private int numeroGerado;
+
 
     private GeradorDeNumeroAleatorio(Builder builder) {
         this.minimo = builder.minimo;
@@ -237,35 +241,49 @@ class GeradorDeNumeroAleatorio {
             return this;
         }
 
-        private void gerarNumeroAleatorio() {
-            Random random = new Random();
-            var numeroAleatorio = random.nextInt(this.maximo - this.minimo + 1) + this.minimo;
-            this.numeroGerado = numeroAleatorio;
-        }
-
         public GeradorDeNumeroAleatorio build() {
-            gerarNumeroAleatorio();
+            Random random = new Random();
+            this.numeroGerado = random.nextInt(this.maximo - this.minimo + 1) + this.minimo;
             return new GeradorDeNumeroAleatorio(this);
         }
 
     }
 
-    public InputCompare compareWith(Integer input) {
+    public InputNumber compareWith(Integer input) {
 
         return switch (Integer.compare(input, this.numeroGerado)) {
-            case -1 -> InputCompare.MENOR;
-            case 0 -> InputCompare.IGUAL;
-            case 1 -> InputCompare.MAIOR;
-            default ->
-                    throw new IllegalStateException("Unexpected value: "
-                            + Integer.compare(input, this.numeroGerado));
+            case -1 -> InputNumber.MENOR;
+            case 0 -> InputNumber.IGUAL;
+            case 1 -> InputNumber.MAIOR;
+            default -> throw new IllegalStateException("Unexpected value: "
+                    + Integer.compare(input, this.numeroGerado));
         };
 
     }
 
 }
 
-enum InputCompare {
+class ValidarInput {
+
+    public static <T> T validateInput(Scanner scanner, String prompt, Predicate<T> validator) {
+        T input;
+        while (true) {
+            System.out.print(prompt);
+            try {
+                input = (T) scanner.nextLine();
+                if (validator.test(input)) {
+                    return input;
+                } else {
+                    System.out.println("Entrada invalida. Por favor, tente novamente.");
+                }
+            } catch (ClassCastException e) {
+                System.out.println("Formato de entrada invalido. Por favor, tente novamente.");
+            }
+        }
+    }
+}
+
+enum InputNumber {
     IGUAL,
     MAIOR,
     MENOR,
