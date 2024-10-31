@@ -8,6 +8,7 @@ package com.enalto;
  * Projeto REQUER Java 15 ou superior
  */
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.*;
@@ -31,13 +32,81 @@ public class AdvinharNumeros {
         advinharNumeros.run();
     }
 
-
     /**
      * Start da aplicacao
      */
     private void run() {
-        logger.setLevel(Level.INFO);
+        printImageASCII();
+        Optional<Pair> pair = leituraDoIntervaloNumeroAleatorio();
+        if (pair.isPresent()) {
+            geradorDeNumeroAleatorio = gerarNumeroAleatorio(pair.get());
+            avaliarChute();
+        }
+        System.out.println("fim de jogo!");
+    }
 
+
+    private void avaliarChute() {
+        while (true) {
+            int chute = leituraDoChute();
+            InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(chute);
+
+            if (inputCompare.equals(InputCompare.IGUAL)) {
+                System.out.println("Parabens você acertou !!!");
+                System.out.println("Tentativas= " + countTentativas);
+                break;
+            } else if (inputCompare.equals(InputCompare.MENOR)) {
+                System.out.println("Numero secreto é menor!, tente novamente");
+            } else {
+                System.out.println("Numero secreto é maior!, tente novamente");
+            }
+        }
+    }
+
+    private int leituraDoChute() {
+        Scanner scanner = new Scanner(System.in);
+        int chuteValue = 0;
+        while (true) {
+            String chute = ValidarInput
+                    .validateInput(scanner, "Entre com numero secreto ou [enter]=sair ",
+                            (String s) -> s.isEmpty() | s.matches("^\\d+$"));
+            if (chute.isEmpty()) break;
+
+            chuteValue = Integer.parseInt(chute);
+
+            if (!validaIntervalo(chuteValue)) {
+                System.out.println("Chute deve estar no intervalo entre " + geradorDeNumeroAleatorio.getMinimo()
+                        + " e " + geradorDeNumeroAleatorio.getMaximo());
+                continue;
+            }
+            this.countTentativas++;
+        }
+        return chuteValue;
+    }
+
+    private Optional<Pair> leituraDoIntervaloNumeroAleatorio() {
+        Scanner scanner = new Scanner(System.in);
+        Optional<Pair> pair = Optional.empty();
+        while (true) {
+            String start = ValidarInput.validateInput(scanner, "Digite o intervalo inicial ou [Enter]=sair: ",
+                    (String s) -> s.matches("^\\d+$") | s.isEmpty());
+            if (start.isEmpty()) break;
+
+            String end = ValidarInput.validateInput(scanner, "Digite o intervalo final ou [Enter]=sair: ",
+                    (String s) -> s.matches("^\\d+$") | s.isEmpty());
+            if (end.isEmpty()) break;
+
+            if ((Integer.parseInt(start) > Integer.parseInt(end))) {
+                System.out.println("Intervalo incorreto, informe novamente!");
+                continue;
+            }
+            return pair = Optional.of(new Pair(Integer.parseInt(start), Integer.parseInt(end)));
+        }
+        return pair;
+    }
+
+
+    private static void printImageASCII() {
         /**
          * Requerido JVM 15 ou superior
          *
@@ -65,86 +134,11 @@ public class AdvinharNumeros {
                     """;
             logger.info(thin);
         }
-
         logger.info("Aluno: Enalto de Oliveira Gondrige");
         logger.info("RA: 22114039-5");
         logger.info("Bem-vindo ao Jogo da Advinhação!");
         logger.info("Tente adivinhar o número secreto.");
-        logger.info("Digite 'sair' para encerrar o jogo.");
 
-        int inputNumber = 0;
-        boolean entradaInvalida = true;
-        String min = "";
-        String max = "";
-
-        do {
-
-            min = lerString("Digite o intervalo inicial para gerar o numero secreto ou (sair): ");
-            if (isShutdown(min))
-                return;
-
-            entradaInvalida = !checkInput(min);
-            if (entradaInvalida)
-                continue;
-
-            max = lerString("Digite o intervalo final para gerar o numero secreto ou (sair): ");
-            if (isShutdown(max))
-                return;
-
-            entradaInvalida = !checkInput(max);
-
-            if (!(Integer.parseInt(max) > Integer.parseInt(min))) {
-                System.out.println("Intervalo incorreto, informe novamente!");
-                entradaInvalida = true;
-            }
-
-        } while (entradaInvalida);
-
-        try {
-            this.geradorDeNumeroAleatorio =
-                    gerarNumeroAleatorio(Integer.parseInt(min), Integer.parseInt(max));
-        } catch (Exception e) {
-            System.out.println("Numero de tentativas= " + this.countTentativas);
-            System.out.println("Entrada inválida. [" + e.getMessage() + "]");
-            return;
-        }
-
-        while (true) {
-            String input = lerString("Digite o numero secreto ou [sair] para finalizar: ");
-
-            if (input.equalsIgnoreCase("sair")) {
-                logger.info("Numero de tentativas= " + this.countTentativas);
-                logger.info("Jogo finalizado.");
-                break;
-            } else {
-                try {
-                    inputNumber = Integer.parseInt(input);
-                } catch (NumberFormatException e) {
-                    System.out.println("Digite um numero válido!!!");
-                    continue;
-                }
-                this.countTentativas++;
-
-                int intervaloInicial = geradorDeNumeroAleatorio.getMinimo();
-                int intervaloFinal = geradorDeNumeroAleatorio.getMaximo();
-                if (!validaIntervalo(inputNumber)) {
-                    System.out.println("Numero digitado está fora do intervalo [" + intervaloInicial + "-" + intervaloFinal + "] definido!!!");
-                    continue;
-                }
-
-                InputCompare inputCompare = geradorDeNumeroAleatorio.compareWith(inputNumber);
-
-                if (inputCompare.equals(InputCompare.IGUAL)) {
-                    logger.info("Você acertou!!! o numero secreto é= " + geradorDeNumeroAleatorio.getNumeroGerado() + ", parabens!");
-                    logger.info("Numero de tentativas= " + this.countTentativas);
-                    break;
-                } else if (inputCompare.equals(InputCompare.MAIOR)) {
-                    System.out.println("Numero secreto é MENOR, tente novamente");
-                } else {
-                    System.out.println("Numero secreto é MAIOR, tente novamente");
-                }
-            }
-        }
     }
 
     private boolean validaIntervalo(int inputNumber) {
@@ -173,51 +167,26 @@ public class AdvinharNumeros {
     }
 
     /**
-     * Checar se o usuario quer sair do jogo
-     *
-     * @param input
-     * @return
-     */
-    private boolean isShutdown(String input) {
-        if (input.equalsIgnoreCase("sair")) {
-            logger.info("Numero de tentativas= " + this.countTentativas);
-            logger.info("Jogo finalizado.");
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
      * Cria um objeto GeradorDeNumeroAleatorio que contem o numero aleatorio
      * gerado
      *
-     * @param min
-     * @param max
+     * @param Pair
      * @return GeradorDeNumeroAleatorio
      */
-    private GeradorDeNumeroAleatorio gerarNumeroAleatorio(int min, int max) {
+    private GeradorDeNumeroAleatorio gerarNumeroAleatorio(Pair pair) {
         var numeroAleatorio = new GeradorDeNumeroAleatorio.Builder()
-                .comIntervaloInicial(min)
-                .comIntervaloFinal(max)
+                .comIntervaloInicial(pair.start)
+                .comIntervaloFinal(pair.end)
                 .build();
+        this.geradorDeNumeroAleatorio = numeroAleatorio;
         return numeroAleatorio;
     }
 
-
-    /**
-     * Leitura das entradas digitadas pelo usuario
-     *
-     * @param mensagem
-     * @return String
-     */
-    private String lerString(String mensagem) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print(mensagem);
-        return scanner.nextLine();
+    private record Pair(int start, int end) {
     }
 
 }
+
 
 /**
  * Classe GeradorDeNumeroAleatorio, para gerar o numero aleatorio
@@ -315,5 +284,4 @@ enum InputCompare {
     IGUAL,
     MAIOR,
     MENOR,
-
 }
